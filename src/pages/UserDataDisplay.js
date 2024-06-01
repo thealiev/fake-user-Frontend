@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
+import { getUserData } from "../utils/api";
 
 const UserDataDisplay = ({ region, seed, errorAmount }) => {
   const [userData, setUserData] = useState([]);
@@ -7,64 +8,30 @@ const UserDataDisplay = ({ region, seed, errorAmount }) => {
   const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
-    loadInitialData();
+    loadUserData(page);
   }, [region, seed, errorAmount]);
 
-  const fetchData = async (pageNumber) => {
+  const loadUserData = async (pageNumber) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/userData`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          region,
-          seed,
-          page: pageNumber,
-          pageSize: 20,
-          errorAmount,
-        }),
-      });
-      if (!response.ok) {
-        throw new Error("Server responded with an error");
+      const data = await getUserData(region, pageNumber, 20, errorAmount, seed);
+      if (data.length > 0) {
+        setUserData((prevData) => [...prevData, ...data]);
+        setPage((prevPage) => prevPage + 1);
+      } else {
+        setHasMore(false);
       }
-      const data = await response.json();
-      return data;
     } catch (error) {
-      console.error("API fetch error:", error);
-    }
-  };
-
-  const loadInitialData = async () => {
-    const initialData = await fetchData(1);
-    if (initialData && initialData.length > 0) {
-      setUserData(initialData);
-      setPage(2);
-    }
-  };
-
-  const fetchMoreData = async () => {
-    if (!hasMore) return;
-    const moreData = await fetchData(page);
-    if (!moreData || moreData.length === 0) {
-      setHasMore(false);
-    } else {
-      setUserData((prevData) => [...prevData, ...moreData]);
-      setPage((prevPage) => prevPage + 1);
+      console.error("Error loading user data:", error);
     }
   };
 
   return (
     <InfiniteScroll
       dataLength={userData.length}
-      next={fetchMoreData}
+      next={() => loadUserData(page + 1)}
       hasMore={hasMore}
-      loader={
-        <div className="flex justify-center items-center mt-10 text-[20px]">
-          Loading...
-        </div>
-      }
-      endMessage={
-        <p className="text-center text-red-500">No more data to load</p>
-      }
+      loader={<h4>Loading...</h4>}
+      endMessage={<p>No more data to load</p>}
     >
       <div>
         <table className="min-w-full bg-white">
