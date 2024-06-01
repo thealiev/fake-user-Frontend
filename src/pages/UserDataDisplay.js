@@ -30,7 +30,7 @@ const UserDataDisplay = ({ region, seed, errorAmount }) => {
       dataLength={userData.length}
       next={() => loadUserData(page + 1)}
       hasMore={hasMore}
-      loader={<h4>Loading...</h4>}
+      loader={<h4 className="text-center text-[25px] text-red-600 font-medium">Loading...</h4>}
       endMessage={<p>No more data to load</p>}
     >
       <div>
