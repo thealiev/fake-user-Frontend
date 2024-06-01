@@ -1,5 +1,4 @@
-
-const baseURL = "http://localhost:5000";
+const baseURL = "https://fake-user-backend.onrender.com";
 
 export const getUserData = async (
   region,
